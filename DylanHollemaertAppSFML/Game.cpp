@@ -6,12 +6,14 @@ namespace {
 	// Indexes
 	int DVDColorIndex = 0;
 	// DVD Logo App
-	float f_xVelocity = 6.f;
-	float f_yVelocity = 6.f;
+	float f_xVelocity = 3.f;
+	float f_yVelocity = 3.f;
+	// Pong
+	float f_Pong_xVelocity = 6.f;
+	float f_Pong_yVelocity = 6.f;
 	// Tilebreaker
 	float f_TBK_xVelocity = 5.f;
 	float f_TBK_yVelocity = 5.f;
-	const int Y_TILES_GAP_TBK = 20;
 	// Pong
 	int scoreLeftPlayer = 0;
 	int scoreRightPlayer = 0;
@@ -24,6 +26,19 @@ namespace {
 // Converts float numbers to nanoseconds time duration
 static std::chrono::nanoseconds durationToDuration(const float& time_s) {
 	return std::chrono::round<std::chrono::nanoseconds>(std::chrono::duration<float>{ time_s });
+}
+
+// --- "paint" mode only --- 
+// Checks the line thickness to draw elements on the white board
+static float lineThicknessToElementRadius(int lineThickness) {
+	if (lineThickness > 5) {
+		lineThickness = 5;
+	}
+	if (lineThickness < 1) {
+		lineThickness = 1;
+	}
+	float elementRadius = (float)lineThickness * 10;
+	return elementRadius;
 }
 
 // Constructor / Destructor
@@ -60,6 +75,15 @@ void Game::initTextures() {
 	smallAppIcon.loadFromFile("Assets/Images/Icons/iconSmall.png");
 	closeWindowIcon.loadFromFile("Assets/Images/Icons/closeWindowIcon.png");
 	minimizeWindowIcon.loadFromFile("Assets/Images/Icons/minimizeWindowIcon.png");
+	paintTopBarPaletteEraserTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteEraser.png");
+	paintTopBarPaletteClearAllTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteClearAll.png");
+	paintTopBarPaletteDrawBrushTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteBrush.png");
+	paintTopBarPaletteDrawPenTexture.loadFromFile("Assets/Images/IMG_paintTopBarPalettePen.png");
+	paintTopBarPaletteThicknessPlusTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteThicknessPlus.png");
+	paintTopBarPaletteThicknessMinusTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteThicknessMinus.png");
+	// --- "Cursors" --- //
+	arrowCursor.loadFromSystem(sf::Cursor::Arrow);
+	handCursor.loadFromSystem(sf::Cursor::Hand);
 
 	// App's icon in the taskbar
 	window->setIcon(appIcon.getSize().x, appIcon.getSize().y, appIcon.getPixelsPtr());
@@ -98,20 +122,10 @@ void Game::initTextures() {
 	windowExitCross.setPosition(window->getSize().x - (30.f), 0);
 	windowExitCross.setSize(sf::Vector2f(30.f, 30.f));
 	windowExitCross.setFillColor(sf::Color::White);
-	windowExitCrossRect.setPosition(window->getSize().x - 30.f, 0.f);
-	windowExitCrossRect.setSize(sf::Vector2f(28.f, 30.f));
-	windowExitCrossRect.setFillColor(sf::Color::Transparent);
-	windowExitCrossRect.setOutlineThickness(1.f);
-	windowExitCrossRect.setOutlineColor(sf::Color::Black);
 	// --- Reduce line
 	windowReduceLine.setPosition(window->getSize().x - (2 * 30.f), 0.f);
 	windowReduceLine.setSize(sf::Vector2f(30.f, 30.f));
 	windowReduceLine.setFillColor(sf::Color::White);
-	windowReduceLineRect.setPosition(window->getSize().x - 29.5f, -2.f);
-	windowReduceLineRect.setSize(sf::Vector2f(28.f, 30.f));
-	windowReduceLineRect.setFillColor(sf::Color::Transparent);
-	windowReduceLineRect.setOutlineThickness(1.f);
-	windowReduceLineRect.setOutlineColor(sf::Color::Black);
 
 	// Main application textures
 	sprLogoDVD.setTexture(logoDVD);
@@ -127,11 +141,72 @@ void Game::initTextures() {
 	paintWhiteBoard.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2), ((window->getSize().y / 2) - (paintWhiteBoard.getSize().y / 2)) + m_topBarHeight + 15.f)); // 30.f palette
 	paintWhiteBoard.setOutlineThickness(1.f);
 	paintWhiteBoard.setOutlineColor(sf::Color::Black);
+	// TOPBAR
 	paintTopBarPalette.setSize(sf::Vector2f(paintWhiteBoard.getSize().x, 60.f));
 	paintTopBarPalette.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2), 60.f));
 	paintTopBarPalette.setOutlineThickness(1.f);
 	paintTopBarPalette.setOutlineColor(sf::Color::Black);
-	paintTopBarPalette.setFillColor(sf::Color::White);
+	paintTopBarPalette.setFillColor(sf::Color(128,128,128));
+	// COLORS SECTION
+	paintTopBarPaletteColorsSectionColorBlack.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorBlack.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 10.f, 70.f));
+	paintTopBarPaletteColorsSectionColorBlack.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorBlack.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorBlack.setFillColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorWhite.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorWhite.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 60.f, 70.f));
+	paintTopBarPaletteColorsSectionColorWhite.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorWhite.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorWhite.setFillColor(sf::Color::White);
+	paintTopBarPaletteColorsSectionColorRed.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorRed.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 110.f, 70.f));
+	paintTopBarPaletteColorsSectionColorRed.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorRed.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorRed.setFillColor(sf::Color::Red);
+	paintTopBarPaletteColorsSectionColorGreen.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorGreen.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 160.f, 70.f));
+	paintTopBarPaletteColorsSectionColorGreen.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorGreen.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorGreen.setFillColor(sf::Color::Green);
+	paintTopBarPaletteColorsSectionColorBlue.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorBlue.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 210.f, 70.f));
+	paintTopBarPaletteColorsSectionColorBlue.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorBlue.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorBlue.setFillColor(sf::Color::Blue);
+	paintTopBarPaletteColorsSectionColorPurple.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorPurple.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 260.f, 70.f));
+	paintTopBarPaletteColorsSectionColorPurple.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorPurple.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorPurple.setFillColor(sf::Color(153,51,255));
+	paintTopBarPaletteColorsSectionColorPink.setSize(sf::Vector2f(40.f, 40.f));
+	paintTopBarPaletteColorsSectionColorPink.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 310.f, 70.f));
+	paintTopBarPaletteColorsSectionColorPink.setOutlineThickness(1.f);
+	paintTopBarPaletteColorsSectionColorPink.setOutlineColor(sf::Color::Black);
+	paintTopBarPaletteColorsSectionColorPink.setFillColor(sf::Color::Magenta);
+	// ERASER
+	paintTopBarPaletteClearSectionEraser.setTexture(paintTopBarPaletteEraserTexture);
+	paintTopBarPaletteClearSectionEraser.scale(sf::Vector2f(0.08929f, 0.08929f));
+	paintTopBarPaletteClearSectionEraser.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 110.f, 70.f));
+	// CLEAR ALL
+	paintTopBarPaletteClearSectionClearAll.setTexture(paintTopBarPaletteClearAllTexture);
+	paintTopBarPaletteClearSectionClearAll.scale(sf::Vector2f(0.078125f, 0.078125f));
+	paintTopBarPaletteClearSectionClearAll.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 50.f, 70.f));
+	paintTopBarPaletteClearSectionClearAll.setColor(sf::Color::Black);
+	// BRUSH
+	paintTopBarPaletteDrawSectionBrush.setTexture(paintTopBarPaletteDrawBrushTexture);
+	paintTopBarPaletteDrawSectionBrush.scale(sf::Vector2f(0.078125f, 0.078125f));
+	paintTopBarPaletteDrawSectionBrush.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 210.f, 70.f));
+	// PEN
+	paintTopBarPaletteDrawSectionPen.setTexture(paintTopBarPaletteDrawPenTexture);
+	paintTopBarPaletteDrawSectionPen.scale(sf::Vector2f(0.078125f, 0.078125f));
+	paintTopBarPaletteDrawSectionPen.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 160.f, 70.f));
+	// LINE THICKNESS
+	paintTopBarPaletteThicknessPlus.setTexture(paintTopBarPaletteThicknessPlusTexture);
+	paintTopBarPaletteThicknessPlus.scale(sf::Vector2f(0.078125f, 0.078125f));
+	paintTopBarPaletteThicknessPlus.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 535.f, 70.f));
+	paintTopBarPaletteThicknessMinus.setTexture(paintTopBarPaletteThicknessMinusTexture);
+	paintTopBarPaletteThicknessMinus.scale(sf::Vector2f(0.045f, 0.078125f));
+	paintTopBarPaletteThicknessMinus.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 585.f, 70.f));
 
 	// Pong mode textures
 	pongPlayBall.setRadius(15.f);
@@ -182,11 +257,10 @@ void Game::initTextures() {
 		tileLifeTbk[69 - i] = tileLife;
 		tilesLifesTbk[i].setFont(GoodTiming);
 		tilesLifesTbk[i].setCharacterSize(45);
-		tilesLifesTbk[i].setFillColor(sf::Color(180,180,180));
+		tilesLifesTbk[i].setFillColor(sf::Color(62,62,62));
 		tilesLifesTbk[i].setOutlineThickness(1.f);
 		tilesLifesTbk[i].setOutlineColor(sf::Color(DARKEST_GRAY));
-		tilesLifesTbk[i].setString(std::to_string(tileLife)); // Un truc qui oscille entre 0 et 7 de 0 à 70 donc 0..0..0 ... 1..1..1 ... 7..7..7
-		std::cout << "Vie de la case " << i << " : " << tileLife << "HP" << "\n";
+		tilesLifesTbk[i].setString(std::to_string(tileLife));
 		tileLife--;
 	}
 
@@ -321,6 +395,12 @@ void Game::pollEvents() {
 					m_isRunning = false;
 					window->close();
 				}
+				if (!showMenu && mode == "pong") {
+					pongStarted = false;
+				}
+				if (showMenu && mode == "pong") {
+					pongStarted = true;
+				}
 				if (showMenu) {
 					showMenu = false;
 				}
@@ -332,8 +412,9 @@ void Game::pollEvents() {
 		// Mouse events
 		case sf::Event::MouseMoved:
 			if (m_isMouseDragging) {
-				if (m_lastDownX >= 0 && m_lastDownX <= window->getSize().x && m_lastDownY >= 0 && m_lastDownY <= m_topBarHeight) // Dragging the window
+				if (m_lastDownX >= 0 && m_lastDownX <= window->getSize().x && m_lastDownY >= 0 && m_lastDownY <= m_topBarHeight) // Drags the window
 					window->setPosition(window->getPosition() + sf::Vector2<int>(event.mouseMove.x - m_lastDownX, event.mouseMove.y - m_lastDownY));
+
 			}
 			// MENU ICONS
 			if (menuTextOneRect.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
@@ -379,6 +460,41 @@ void Game::pollEvents() {
 				windowExitCross.setFillColor(sf::Color(255, 67, 67));
 			else // CLOSE
 				windowExitCross.setFillColor(sf::Color::White);
+			// PAINT MODE
+			if (mode == "paint") {
+				// COLORS SECTION
+				if (paintTopBarPaletteColorsSectionColorBlack.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteColorsSectionColorWhite.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteColorsSectionColorRed.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteColorsSectionColorGreen.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteColorsSectionColorBlue.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteColorsSectionColorPurple.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteColorsSectionColorPink.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				// THICKNESS SECTION
+				else if (paintTopBarPaletteThicknessPlus.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteThicknessMinus.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				// CLEAR SECTION
+				else if (paintTopBarPaletteClearSectionEraser.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteClearSectionClearAll.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteDrawSectionBrush.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				else if (paintTopBarPaletteDrawSectionPen.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
+					window->setMouseCursor(handCursor);
+				// NOTHING
+				else
+					window->setMouseCursor(arrowCursor);
+			}
 			break;
 			// Mouse clicks
 		case sf::Event::MouseButtonPressed:
@@ -408,29 +524,24 @@ void Game::pollEvents() {
 				// "Accueil"
 				else if (menuTextThreeRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					std::cout << "L'utilisateur retourne a l'accueil" << std::endl;
-					// Code
 					mode = "default";
 					break;
 				}
 				// "Peindre"
 				else if (menuTextFourRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					std::cout << "Peindre execute par l'utilisateur" << std::endl;
-					// Code
 					mode = "paint";
-					render();
 					break;
 				}
 				// "Pong"
 				else if (menuTextFiveRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					std::cout << "Pong execute par l'utilisateur" << std::endl;
 					mode = "pong";
-					window->clear();
 					break;
 				}
 				// "Casse briques"
 				else if (menuTextSixRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					std::cout << "Casse briques execute par l'utilisateur" << std::endl;
-					// Code
 					mode = "tilebreaker";
 					break;
 				}
@@ -439,6 +550,85 @@ void Game::pollEvents() {
 					std::cout << "It's a beautiful day outside..." << std::endl;
 					mode = "fiesta";
 					mus_megalovania.play();
+					break;
+				}
+				else
+					showMenu = false; // Cacher le menu si on clique ailleurs
+				// --- PAINT --- //
+				if (paintTopBarPaletteColorsSectionColorBlack.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorBlack.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteColorsSectionColorWhite.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorWhite.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteColorsSectionColorRed.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorRed.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteColorsSectionColorGreen.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorGreen.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteColorsSectionColorBlue.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorBlue.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteColorsSectionColorPurple.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorPurple.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteColorsSectionColorPink.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					lineColor = paintTopBarPaletteColorsSectionColorPink.getFillColor();
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				// THICKNESS SECTION
+				else if (paintTopBarPaletteThicknessPlus.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					drawRadius = lineThicknessToElementRadius(lineThickness + 1);
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteThicknessMinus.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					drawRadius = lineThicknessToElementRadius(lineThickness - 1);
+					std::cout << "Event" << std::endl;
+					break;
+				}
+				// CLEAR SECTION
+				else if (paintTopBarPaletteClearSectionEraser.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					isErasing = true;
+					isDrawingBrush = false;
+					isDrawingPen = false;
+					isColoring = false;
+					std::cout << "Gomme" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteClearSectionClearAll.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					paintWhiteBoardElements.clear();
+					std::cout << "Poubelle" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteDrawSectionBrush.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					isErasing = false;
+					isDrawingBrush = true;
+					isDrawingPen = false;
+					isColoring = false;
+					std::cout << "Pinceau" << std::endl;
+					break;
+				}
+				else if (paintTopBarPaletteDrawSectionPen.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+					isErasing = false;
+					isDrawingBrush = false;
+					isDrawingPen = true;
+					isColoring = false;
+					std::cout << "Stylo" << std::endl;
 					break;
 				}
 				else
@@ -494,6 +684,10 @@ void Game::pollEvents() {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
 		if (mode == "pong")
 			pongStarted = true;
+		if (mode == "pong" && showMenu == true) {
+			showMenu = false;
+			pongStarted = true;
+		}
 		if (mode == "tilebreaker") {
 			TBKStarted = true;
 			TBKPaused = false;
@@ -525,10 +719,11 @@ void Game::update() {
 		float xPos = pongPlayBall.getPosition().x;
 		float yPos = pongPlayBall.getPosition().y;
 		if (pongStarted)
-			pongPlayBall.move(f_xVelocity, f_yVelocity);
+			pongPlayBall.move(f_Pong_xVelocity, f_Pong_yVelocity);
 		if (pongPlayBall.getPosition().x < 0) {
 			// Changement de score (+1 pour le joueur de droite)
 			scoreRightPlayer++;
+			f_Pong_xVelocity = 6.f;
 			pongScoreRightPlayer.setString(std::to_string(scoreRightPlayer));
 			pongPlayBall.setPosition(sf::Vector2f((float)(window->getSize().x / 2) - (float)(pongPlayBall.getRadius()), (float)(window->getSize().y / 2) - (float)(pongPlayBall.getRadius())));
 		}
@@ -536,15 +731,16 @@ void Game::update() {
 		if (pongPlayBall.getPosition().x > (window->getSize().x - pongPlayBall.getGlobalBounds().width)) {
 			// Changement de score (+1 pour le joueur de gauche)
 			scoreLeftPlayer++;
+			f_Pong_xVelocity = -6.f;
 			pongScoreLeftPlayer.setString(std::to_string(scoreLeftPlayer));
 			pongPlayBall.setPosition(sf::Vector2f((float)(window->getSize().x / 2) - (float)(pongPlayBall.getRadius()), (float)(window->getSize().y / 2) - (float)(pongPlayBall.getRadius())));
 		}
-		if ((pongPlayBall.getGlobalBounds().intersects(pongPlayerRacket.getGlobalBounds()) && f_xVelocity < 0)
-			|| (pongPlayBall.getGlobalBounds().intersects(pongOpponentRacket.getGlobalBounds()) && f_xVelocity > 0)) {
-			f_xVelocity *= -1;
+		if ((pongPlayBall.getGlobalBounds().intersects(pongPlayerRacket.getGlobalBounds()) && f_Pong_xVelocity < 0)
+			|| (pongPlayBall.getGlobalBounds().intersects(pongOpponentRacket.getGlobalBounds()) && f_Pong_xVelocity > 0)) {
+			f_Pong_xVelocity *= -1;
 		}
 		if (pongPlayBall.getPosition().y < m_topBarHeight || pongPlayBall.getPosition().y >(window->getSize().y - pongPlayBall.getGlobalBounds().height)) {
-			f_yVelocity *= -1;
+			f_Pong_yVelocity *= -1;
 		}
 	}
 	if (mode == "tilebreaker") {
@@ -592,8 +788,21 @@ void Game::render() {
 	}
 	// Drawing part "paint"
 	if (mode == "paint") {
-		window->draw(paintTopBarPalette);
 		window->draw(paintWhiteBoard);
+		window->draw(paintTopBarPalette);
+		window->draw(paintTopBarPaletteColorsSectionColorBlack);
+		window->draw(paintTopBarPaletteColorsSectionColorWhite);
+		window->draw(paintTopBarPaletteColorsSectionColorRed);
+		window->draw(paintTopBarPaletteColorsSectionColorGreen);
+		window->draw(paintTopBarPaletteColorsSectionColorBlue);
+		window->draw(paintTopBarPaletteColorsSectionColorPurple);
+		window->draw(paintTopBarPaletteColorsSectionColorPink);
+		window->draw(paintTopBarPaletteThicknessPlus);
+		window->draw(paintTopBarPaletteThicknessMinus);
+		window->draw(paintTopBarPaletteDrawSectionBrush);
+		window->draw(paintTopBarPaletteDrawSectionPen);
+		window->draw(paintTopBarPaletteClearSectionEraser);
+		window->draw(paintTopBarPaletteClearSectionClearAll);
 	}
 	// Drawing part "pong"
 	if (mode == "pong") {
@@ -618,7 +827,7 @@ void Game::render() {
 			for (int j = 1; j < 8; ++j) {
 				if (tilesTbkState[it] == true) { // Only set their position if they're alive
 					tilesTbk[it].setPosition(sf::Vector2f((
-						(window->getSize().x - window->getSize().y) / 2) + (tilesTbk[i].getSize().x * i),
+						(window->getSize().x - window->getSize().y) / 2) + (tilesTbk[i].getSize().x * i) - 2,
 						((tilesTbk[i].getSize().y + 10) * j)));
 					tilesLifesTbk[it].setPosition(sf::Vector2f(tilesTbk[it].getPosition().x + 17.f, tilesTbk[it].getPosition().y - 4.f));
 				}

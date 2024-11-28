@@ -6,7 +6,6 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
-#include "SFML/Network.hpp"
 // ----- STL ----- //
 #include <Windows.h>
 #include <iostream>
@@ -40,7 +39,7 @@ private:
 	const float m_topBarHeight = 30.f;
 	bool showMenu = false;
 	bool pongStarted = false;
-	bool TBKStarted = false;
+	bool TBKStarted = false; /* TBK = TileBreaker */
 	bool TBKPaused = false;
 	bool m_isMouseDragging;
 	unsigned int m_lastDownX;
@@ -48,28 +47,54 @@ private:
 	std::chrono::steady_clock::time_point startingTimePoint, currentTimePoint;
 
 private:
+	// --- Cursors --- //
+	sf::Cursor arrowCursor;
+	sf::Cursor handCursor;
 	// --- Colors --- //
 	std::array<sf::Color, 12> colors; // Colors of the DVD Logo
+	sf::Color lineColor = sf::Color(0,0,0); // Initialized to black
 	// --- Tiles TBK --- //
 	std::array<sf::RectangleShape, 70> tilesTbk; // Tiles in the tilebreaker game (7 height, 10 width -> 7x10 setup -> 70 tiles)
-	std::array<sf::Text, 70> tilesLifesTbk;      // Their lifes ^^^
-	bool tilesTbkState[70];                      // To get if a tile is broken or not
-	int tileLife;
+	std::array<sf::Text, 70> tilesLifesTbk;
+	bool tilesTbkState[70];
 	int tileLifeTbk[70];
-	// --- Textures --- //
+	int tileLife;
+	// --- Paint --- //
+	int lineThickness = 1;
+	float drawRadius = 10.f;
+	bool isDrawingBrush = false;
+	bool isDrawingPen = false;
+	bool isErasing = false;
+	bool isColoring = false;
+	// -- Images --- //
 	sf::Image brush;
+	// --- Textures --- //
+	std::vector<sf::CircleShape> paintWhiteBoardElements;
 	sf::Texture logoDVD;
-	sf::Sprite sprLogoDVD;
 	sf::Texture smallAppIcon;
-	sf::Sprite smallAppIconSpr;
 	sf::Texture closeWindowIcon;
-	sf::Sprite closeWindowIconSpr;
 	sf::Texture minimizeWindowIcon;
+	sf::Texture paintTopBarPaletteEraserTexture;
+	sf::Texture paintTopBarPaletteClearAllTexture;
+	sf::Texture paintTopBarPaletteDrawBrushTexture;
+	sf::Texture paintTopBarPaletteDrawPenTexture;
+	sf::Texture paintTopBarPaletteThicknessPlusTexture;
+	sf::Texture paintTopBarPaletteThicknessMinusTexture;
+	// --- Sprites --- //
+	sf::Sprite smallAppIconSpr;
+	sf::Sprite closeWindowIconSpr;
 	sf::Sprite minimizeWindowIconSpr;
+	sf::Sprite sprLogoDVD;
+	sf::Sprite paintTopBarPaletteClearSectionEraser;
+	sf::Sprite paintTopBarPaletteClearSectionClearAll;
+	sf::Sprite paintTopBarPaletteDrawSectionBrush;
+	sf::Sprite paintTopBarPaletteDrawSectionPen;
+	sf::Sprite paintTopBarPaletteThicknessPlus;
+	sf::Sprite paintTopBarPaletteThicknessMinus;
 	// --- Fonts --- //
 	sf::Font Impact, Arial, Comic, GoodTiming;
 	// --- Texts "All modes" --- //
-	std::string mode = "tilebreaker";
+	std::string mode = "paint";
 	sf::Text windowTitle;
 	sf::Text FPString;
 	sf::Text timeSinceStart;
@@ -101,27 +126,16 @@ private:
 	sf::RectangleShape menuTextFiveRect;
 	sf::RectangleShape menuTextSixRect;
 	sf::RectangleShape menuTextSevenRect;
-	sf::RectangleShape windowExitCrossRect;
-	sf::RectangleShape windowReduceLineRect;
 	// --- Shapes "paint" --- //
 	sf::RectangleShape paintWhiteBoard;
 	sf::RectangleShape paintTopBarPalette;
-	sf::RectangleShape paintTopBarPaletteColorsSection;
-	sf::RectangleShape paintTopBarPaletteColorsSectionOutline;
+	sf::RectangleShape paintTopBarPaletteColorsSectionColorBlack;
 	sf::RectangleShape paintTopBarPaletteColorsSectionColorWhite;
 	sf::RectangleShape paintTopBarPaletteColorsSectionColorRed;
 	sf::RectangleShape paintTopBarPaletteColorsSectionColorGreen;
 	sf::RectangleShape paintTopBarPaletteColorsSectionColorBlue;
-	sf::RectangleShape paintTopBarPaletteColorsSectionColorBlack;
-	sf::RectangleShape paintTopBarPaletteColorsSectionColorGray;
-	sf::RectangleShape paintTopBarPaletteColorsSectionColorOrange;
-	sf::RectangleShape paintTopBarPaletteClearSection;
-	sf::RectangleShape paintTopBarPaletteClearSectionOutline;
-	sf::RectangleShape paintTopBarPaletteClearSectionElementOutline;
-	sf::RectangleShape paintTopBarPaletteClearSectionEraser;
-	sf::RectangleShape paintTopBarPaletteClearSectionClearAll;
-	sf::RectangleShape paintTopBarPaletteThicknessChoice;
-	sf::RectangleShape paintTopBarPaletteThicknessChoiceOutline;
+	sf::RectangleShape paintTopBarPaletteColorsSectionColorPurple;
+	sf::RectangleShape paintTopBarPaletteColorsSectionColorPink;
 	// --- Shapes "Pong" --- //
 	sf::CircleShape pongPlayBall;
 	sf::RectangleShape pongPlayerRacket;
@@ -137,7 +151,7 @@ private:
 	sf::CircleShape TBKBall;
 	// --- Music --- //
 	sf::Music mus_megalovania; // \brief ...You're dead... \param You \param Sans
-	sf::Music TBKTileBroken;
+	sf::Music TBKTileBroken; // TODO : Add it
 
 private:
 	void initFonts();
