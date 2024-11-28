@@ -6,8 +6,8 @@ namespace {
 	// Indexes
 	int DVDColorIndex = 0;
 	// DVD Logo App
-	float f_xVelocity = 6.f;
-	float f_yVelocity = 6.f;
+	float f_xVelocity = 4.f;
+	float f_yVelocity = 4.f;
 	// Tilebreaker
 	float f_TBK_xVelocity = 5.f;
 	float f_TBK_yVelocity = 5.f;
@@ -305,6 +305,7 @@ void Game::run() {
 		update();
 		// while (timeAccumulator >= timeStep) { // To get a consistent update time, every 60th of a frame -> 60FPS.
 		//     timeAccumulator -= timeStep;
+		//     update();
 		// }
 
 		// Rendering part
@@ -327,16 +328,39 @@ void Game::pollEvents() {
 				if (mode != "pong" || pongOpponentRacket.getGlobalBounds().top <= 30)
 					break;
 				pongOpponentRacket.move(sf::Vector2f(0, -10));
-				break;
 			}
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
 				if (mode != "pong" || pongOpponentRacket.getGlobalBounds().top >= (window->getSize().y - pongOpponentRacket.getSize().y))
 					break;
 				pongOpponentRacket.move(sf::Vector2f(0, 10));
-				break;
 			}
-			switch (event.key.scancode) {
-			case sf::Keyboard::Scan::Escape:
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) { // E in AZERTY
+				mus_megalovania.play();
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { // R in AZERTY
+				mus_megalovania.pause();
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { // Z en AZERTY
+				if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top <= 30)
+					break;
+				pongPlayerRacket.move(sf::Vector2f(0, -10));
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { // Q en AZERTY
+				if (mode != "tilebreaker" || TBKPaddle.getPosition().x <= (TBKScene.getGlobalBounds().left + 2))
+					break;
+				TBKPaddle.move(sf::Vector2f(-10, 0));
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { // S en AZERTY
+				if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top >= (window->getSize().y - pongPlayerRacket.getSize().y))
+					break;
+				pongPlayerRacket.move(sf::Vector2f(0, 10));
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { // D en AZERTY
+				if (mode != "tilebreaker" || TBKPaddle.getPosition().x >= (TBKScene.getGlobalBounds().left + TBKScene.getSize().x - TBKPaddle.getSize().x))
+					break;
+				TBKPaddle.move(sf::Vector2f(10, 0));
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 				if (showMenu && mode == "default") {
 					std::cout << "L'application a ete terminee par l'utilisateur a l'aide de la touche " << sf::Keyboard::getDescription(event.key.scancode).toAnsiString() << "\n";
 					m_isRunning = false;
@@ -348,52 +372,17 @@ void Game::pollEvents() {
 				else {
 					showMenu = true;
 				}
-				break;
-			case sf::Keyboard::Scan::Enter:
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
 				if (mode == "pong")
 					pongStarted = true;
-				if (mode == "tilebreaker"){
+				if (mode == "tilebreaker") {
 					TBKStarted = true;
 					TBKPaused = false;
 				}
-				break;
-			case sf::Keyboard::E: // E in AZERTY
-				mus_megalovania.play();
-				break;
-			case sf::Keyboard::R: // R in AZERTY
-				mus_megalovania.pause();
-				break;
-			case sf::Keyboard::W: // Z en AZERTY
-				if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top <= 30)
-					break;
-				pongPlayerRacket.move(sf::Vector2f(0, -10));
-				break;
-			case sf::Keyboard::S: // S en AZERTY
-				if (mode == "pong") {
-					if(pongPlayerRacket.getGlobalBounds().top >= (window->getSize().y - pongPlayerRacket.getSize().y))
-						break;
-					pongPlayerRacket.move(sf::Vector2f(0, 10));
-				}
-				break;
-			case sf::Keyboard::Scan::A: // Q en AZERTY
-				if (mode == "tilebreaker") {
-					if (TBKPaddle.getPosition().x <= (TBKScene.getGlobalBounds().left + 2)) {
-						break;
-					}
-					TBKPaddle.move(sf::Vector2f(-10, 0));
-				}
-				break;
-			case sf::Keyboard::Scan::D: // D en AZERTY
-				if (mode == "tilebreaker") {
-					if (TBKPaddle.getPosition().x >= (TBKScene.getGlobalBounds().left + TBKScene.getSize().x - TBKPaddle.getSize().x))
-						break;
-					TBKPaddle.move(sf::Vector2f(10, 0));
-				}
-				break;
-			default:
-				break;
 			}
-			// Mouse events
+			break;
+		// Mouse events
 		case sf::Event::MouseMoved:
 			if (m_isMouseDragging) {
 				if (m_lastDownX >= 0 && m_lastDownX <= window->getSize().x && m_lastDownY >= 0 && m_lastDownY <= m_topBarHeight) // Dragging the window
