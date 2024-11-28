@@ -1,0 +1,31 @@
+﻿La génération a démarré 27/11/2024 04:48:25.
+La verbosité de la journalisation a la valeur Normal.     1>Projet "C:\Users\PC\source\repos\DylanHollemaertAppSFML\DylanHollemaertAppSFML\DylanHollemaertAppSFML.vcxproj" sur le nœud 2 (Build cible(s)).
+     1>PrepareForBuild:
+         La sortie structurée est activée. La mise en forme du compilateur diagnostics reflète la hiérarchie des erreurs. Pour plus d’informations, consultez https://aka.ms/cpp/structured-output.
+       InitializeBuildStatus:
+         Mise à jour de l'horodatage "x64\Debug\DylanHol.5d35a9d5.tlog\unsuccessfulbuild".
+       ClCompile:
+         D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\CL.exe /c /IC:\Users\PC\source\repos\DylanHollemaertAppSFML\include /ZI /JMC /nologo /W3 /WX- /diagnostics:column /sdl /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /Fo"x64\Debug\\" /Fd"x64\Debug\vc143.pdb" /external:W3 /Gd /TP /FC /errorReport:prompt DylanHollemaertAppSFML.cpp Game.cpp
+         DylanHollemaertAppSFML.cpp
+     1>C:\Users\PC\source\repos\DylanHollemaertAppSFML\DylanHollemaertAppSFML\DylanHollemaertAppSFML.cpp(5,15): warning C4244: 'argument' : conversion de 'time_t' en 'unsigned int', perte possible de données
+         Game.cpp
+         Génération de code en cours...
+       Link:
+         D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\PC\source\repos\DylanHollemaertAppSFML\x64\Debug\DylanHollemaertAppSFML.exe" /INCREMENTAL /ILK:"x64\Debug\DylanHollemaertAppSFML.ilk" /NOLOGO /LIBPATH:C:\Users\PC\source\repos\DylanHollemaertAppSFML\lib "sfml-system-d.lib" "sfml-window-d.lib" "sfml-graphics-d.lib" "sfml-audio-d.lib" "sfml-network-d.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\PC\source\repos\DylanHollemaertAppSFML\x64\Debug\DylanHollemaertAppSFML.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\PC\source\repos\DylanHollemaertAppSFML\x64\Debug\DylanHollemaertAppSFML.lib" /MACHINE:X64 x64\Debug\DylanHollemaertAppSFML.obj
+         x64\Debug\Game.obj
+         DylanHollemaertAppSFML.vcxproj -> C:\Users\PC\source\repos\DylanHollemaertAppSFML\x64\Debug\DylanHollemaertAppSFML.exe
+       FinalizeBuildStatus:
+         Suppression du fichier "x64\Debug\DylanHol.5d35a9d5.tlog\unsuccessfulbuild".
+         Mise à jour de l'horodatage "x64\Debug\DylanHol.5d35a9d5.tlog\DylanHollemaertAppSFML.lastbuildstate".
+     1>Génération du projet "C:\Users\PC\source\repos\DylanHollemaertAppSFML\DylanHollemaertAppSFML\DylanHollemaertAppSFML.vcxproj" terminée (Build cible(s)).
+
+La génération a réussi.
+
+       "C:\Users\PC\source\repos\DylanHollemaertAppSFML\DylanHollemaertAppSFML\DylanHollemaertAppSFML.vcxproj" (Build cible) (1) ->
+       (ClCompile cible) -> 
+         C:\Users\PC\source\repos\DylanHollemaertAppSFML\DylanHollemaertAppSFML\DylanHollemaertAppSFML.cpp(5,15): warning C4244: 'argument' : conversion de 'time_t' en 'unsigned int', perte possible de données
+
+    1 Avertissement(s)
+    0 Erreur(s)
+
+Temps écoulé 00:00:04.22
