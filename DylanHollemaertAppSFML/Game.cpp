@@ -6,8 +6,8 @@ namespace {
 	// Indexes
 	int DVDColorIndex = 0;
 	// DVD Logo App
-	float f_xVelocity = 4.f;
-	float f_yVelocity = 4.f;
+	float f_xVelocity = 6.f;
+	float f_yVelocity = 6.f;
 	// Tilebreaker
 	float f_TBK_xVelocity = 5.f;
 	float f_TBK_yVelocity = 5.f;
@@ -322,44 +322,8 @@ void Game::pollEvents() {
 			m_isRunning = false;
 			window->close();
 			break;
-			// Key pressed cases
+		// Keyboard events
 		case sf::Event::KeyPressed:
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-				if (mode != "pong" || pongOpponentRacket.getGlobalBounds().top <= 30)
-					break;
-				pongOpponentRacket.move(sf::Vector2f(0, -10));
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-				if (mode != "pong" || pongOpponentRacket.getGlobalBounds().top >= (window->getSize().y - pongOpponentRacket.getSize().y))
-					break;
-				pongOpponentRacket.move(sf::Vector2f(0, 10));
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) { // E in AZERTY
-				mus_megalovania.play();
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { // R in AZERTY
-				mus_megalovania.pause();
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { // Z en AZERTY
-				if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top <= 30)
-					break;
-				pongPlayerRacket.move(sf::Vector2f(0, -10));
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { // Q en AZERTY
-				if (mode != "tilebreaker" || TBKPaddle.getPosition().x <= (TBKScene.getGlobalBounds().left + 2))
-					break;
-				TBKPaddle.move(sf::Vector2f(-10, 0));
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { // S en AZERTY
-				if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top >= (window->getSize().y - pongPlayerRacket.getSize().y))
-					break;
-				pongPlayerRacket.move(sf::Vector2f(0, 10));
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { // D en AZERTY
-				if (mode != "tilebreaker" || TBKPaddle.getPosition().x >= (TBKScene.getGlobalBounds().left + TBKScene.getSize().x - TBKPaddle.getSize().x))
-					break;
-				TBKPaddle.move(sf::Vector2f(10, 0));
-			}
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 				if (showMenu && mode == "default") {
 					std::cout << "L'application a ete terminee par l'utilisateur a l'aide de la touche " << sf::Keyboard::getDescription(event.key.scancode).toAnsiString() << "\n";
@@ -371,14 +335,6 @@ void Game::pollEvents() {
 				}
 				else {
 					showMenu = true;
-				}
-			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-				if (mode == "pong")
-					pongStarted = true;
-				if (mode == "tilebreaker") {
-					TBKStarted = true;
-					TBKPaused = false;
 				}
 			}
 			break;
@@ -508,6 +464,50 @@ void Game::pollEvents() {
 			break;
 		}
 	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+		if (mode != "pong" || pongOpponentRacket.getGlobalBounds().top <= 30)
+			return;
+		pongOpponentRacket.move(sf::Vector2f(0, -10));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+		if (mode != "pong" || pongOpponentRacket.getGlobalBounds().top >= (window->getSize().y - pongOpponentRacket.getSize().y))
+			return;
+		pongOpponentRacket.move(sf::Vector2f(0, 10));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::E)) { // E in AZERTY
+		mus_megalovania.play();
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::R)) { // R in AZERTY
+		mus_megalovania.pause();
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W)) { // Z en AZERTY
+		if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top <= 30)
+			return;
+		pongPlayerRacket.move(sf::Vector2f(0, -10));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) { // Q en AZERTY
+		if (mode != "tilebreaker" || TBKPaddle.getPosition().x <= (TBKScene.getGlobalBounds().left + 2))
+			return;
+		TBKPaddle.move(sf::Vector2f(-10, 0));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::S)) { // S en AZERTY
+		if (mode != "pong" || pongPlayerRacket.getGlobalBounds().top >= (window->getSize().y - pongPlayerRacket.getSize().y))
+			return;
+		pongPlayerRacket.move(sf::Vector2f(0, 10));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) { // D en AZERTY
+		if (mode != "tilebreaker" || TBKPaddle.getPosition().x >= (TBKScene.getGlobalBounds().left + TBKScene.getSize().x - TBKPaddle.getSize().x))
+			return;
+		TBKPaddle.move(sf::Vector2f(10, 0));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+		if (mode == "pong")
+			pongStarted = true;
+		if (mode == "tilebreaker") {
+			TBKStarted = true;
+			TBKPaused = false;
+		}
+	}
 }
 
 // Logic part of the game
@@ -565,7 +565,7 @@ void Game::update() {
 		if (TBKStarted)
 			TBKBall.move(f_TBK_xVelocity, f_TBK_yVelocity);
 		for (int i = 0; i < 70; ++i) {
-			if (TBKBall.getGlobalBounds().intersects(tilesTbk[i].getGlobalBounds()) && f_TBK_yVelocity < 0) {
+			if (TBKBall.getGlobalBounds().intersects(tilesTbk[i].getGlobalBounds()) && 1/*condition de timer a déterminer*/) {
 				f_TBK_xVelocity *= -1;
 				f_TBK_yVelocity *= -1;
 				tilesTbkState[i] = false;
@@ -632,7 +632,7 @@ void Game::render() {
 					tilesLifesTbk[it].setPosition(sf::Vector2f(tilesTbk[it].getPosition().x + 17.f, tilesTbk[it].getPosition().y - 4.f));
 				}
 				tilesTbk[it].setFillColor(sf::Color(colors[j-1]));
-				if (tilesTbkState[it]) {// Draws the tile only if it's alive
+				if (tilesTbkState[it] == true) {// Draws the tile only if it's alive
 					window->draw(tilesTbk[it]);      // Tile
 					window->draw(tilesLifesTbk[it]); // Its HP
 				}
