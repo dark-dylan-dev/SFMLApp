@@ -35,8 +35,8 @@ Game::Game() :
 	initTextures();
 	initTexts();
 	window->setVerticalSyncEnabled(true);
-	t0 = std::chrono::high_resolution_clock::now();
-	t1 = t0;
+	startingTimePoint = std::chrono::high_resolution_clock::now();
+	currentTimePoint = startingTimePoint;
 
 }
 Game::~Game() {}
@@ -276,22 +276,17 @@ void Game::initTexts() {
 
 // Game loop
 void Game::run() {
-	std::chrono::steady_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-
-	const float timeStep = 1.f / 60.f; // 60 FPS
-	float timeAccumulator = 0.f;
+	currentTimePoint = std::chrono::high_resolution_clock::now();
 
 	while (m_isRunning) {
 		// --- RUNTIME SECONDS COUNTER --- //
-		float f_elapsedTime = Clock.restart().asSeconds();
-		t1 += durationToDuration(f_elapsedTime);
-		auto dt = 1.e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count();
-		int timeDuration = (int)dt;
-		timeSinceStart.setString("Time : " + std::to_string(timeDuration) + "s");
+		f_ElapsedTime = Clock.restart().asSeconds();
+		currentTimePoint += durationToDuration(f_ElapsedTime);
+		auto dt = 1.e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimePoint - startingTimePoint).count();
+		timeSinceStart.setString("Time : " + std::to_string((int)dt) + "s");
 
 		// --- FPS CALCULATION --- //
-		timeAccumulator += f_elapsedTime;
-		float fps = 1.f / f_elapsedTime;
+		float fps = 1.f / f_ElapsedTime;
 		// Set the FPS digit precision to 2
 		std::ostringstream oss;
 		oss << std::fixed << std::setprecision(2) << fps;
@@ -303,13 +298,9 @@ void Game::run() {
 
 		// Main loop
 		update();
-		// while (timeAccumulator >= timeStep) { // To get a consistent update time, every 60th of a frame -> 60FPS.
-		//     timeAccumulator -= timeStep;
-		//     update();
-		// }
 
 		// Rendering part
-		render(); // Vsync UPS
+		render();
 	}
 }
 

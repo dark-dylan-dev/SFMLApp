@@ -35,6 +35,7 @@ private:
 	sf::Event event;
 	sf::Image appIcon;
 	sf::Clock Clock;
+	float f_ElapsedTime; // Temps écoulé depuis la dernière frame
 	// ----------------------------------- //
 	const float m_topBarHeight = 30.f;
 	bool showMenu = false;
@@ -44,7 +45,7 @@ private:
 	bool m_isMouseDragging;
 	unsigned int m_lastDownX;
 	unsigned int m_lastDownY;
-	std::chrono::steady_clock::time_point t0, t1;
+	std::chrono::steady_clock::time_point startingTimePoint, currentTimePoint;
 
 private:
 	// --- Colors --- //
