@@ -26,11 +26,16 @@ public:
 
 	void run();
 
+public:
+	int lineThickness = 1;
+	float drawRadius = 10.f;
+
 private:
 	bool m_isRunning;
 	bool cond = true;
 	// Window & important application variables
 	sf::RenderWindow* window;
+	sf::WindowBase windowBase;
 	sf::Event event;
 	sf::Image appIcon;
 	sf::Clock Clock;
@@ -60,8 +65,6 @@ private:
 	int tileLifeTbk[70];
 	int tileLife;
 	// --- Paint --- //
-	int lineThickness = 1;
-	float drawRadius = 10.f;
 	bool isDrawingBrush = false;
 	bool isDrawingPen = false;
 	bool isErasing = false;
@@ -94,7 +97,7 @@ private:
 	// --- Fonts --- //
 	sf::Font Impact, Arial, Comic, GoodTiming;
 	// --- Texts "All modes" --- //
-	std::string mode = "paint";
+	std::string mode = "default";
 	sf::Text windowTitle;
 	sf::Text FPString;
 	sf::Text timeSinceStart;

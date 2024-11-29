@@ -30,29 +30,30 @@ static std::chrono::nanoseconds durationToDuration(const float& time_s) {
 
 // --- "paint" mode only --- 
 // Checks the line thickness to draw elements on the white board
-static float lineThicknessToElementRadius(int lineThickness) {
-	if (lineThickness > 5) {
-		lineThickness = 5;
+static float lineThicknessToElementRadius(int thickness) {
+	if (thickness > 10) {
+		thickness = 10;
 	}
-	if (lineThickness < 1) {
-		lineThickness = 1;
+	if (thickness < 1) {
+		thickness = 1;
 	}
-	float elementRadius = (float)lineThickness * 10;
+	float elementRadius = (float)thickness * 5;
 	return elementRadius;
 }
 
 // Constructor / Destructor
 Game::Game() :
 	window(new sf::RenderWindow(sf::VideoMode(1200, 715), "App SFML", sf::Style::None)),
+	windowBase(sf::VideoMode(window->getSize().x, window->getSize().y), "App SFML", sf::Style::None),
 	m_isRunning(true)
 {
+	windowBase.setVisible(false);
 	initFonts();
 	initTextures();
 	initTexts();
 	window->setVerticalSyncEnabled(true);
 	startingTimePoint = std::chrono::high_resolution_clock::now();
 	currentTimePoint = startingTimePoint;
-
 }
 Game::~Game() {}
 
@@ -383,7 +384,6 @@ void Game::pollEvents() {
 	while (window->pollEvent(event)) {
 		switch (event.type) {
 		case sf::Event::Closed:
-			std::cout << "Fenetre fermee par l'utilisateur" << std::endl;
 			m_isRunning = false;
 			window->close();
 			break;
@@ -391,7 +391,6 @@ void Game::pollEvents() {
 		case sf::Event::KeyPressed:
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 				if (showMenu && mode == "default") {
-					std::cout << "L'application a ete terminee par l'utilisateur a l'aide de la touche " << sf::Keyboard::getDescription(event.key.scancode).toAnsiString() << "\n";
 					m_isRunning = false;
 					window->close();
 				}
@@ -414,7 +413,22 @@ void Game::pollEvents() {
 			if (m_isMouseDragging) {
 				if (m_lastDownX >= 0 && m_lastDownX <= window->getSize().x && m_lastDownY >= 0 && m_lastDownY <= m_topBarHeight) // Drags the window
 					window->setPosition(window->getPosition() + sf::Vector2<int>(event.mouseMove.x - m_lastDownX, event.mouseMove.y - m_lastDownY));
-
+				if (mode == "paint") { // Draws a circle only if the cursor is located within the white board
+					sf::CircleShape toDraw;
+					toDraw.setPosition(sf::Vector2f((float)event.mouseMove.x, (float)event.mouseMove.y));
+					toDraw.setRadius(drawRadius);
+					if (isColoring) {
+						toDraw.setFillColor(lineColor);
+					}
+					else {
+						toDraw.setFillColor(sf::Color::White);
+					}
+					if (toDraw.getPosition().x < paintWhiteBoard.getGlobalBounds().left || toDraw.getPosition().x >(paintWhiteBoard.getGlobalBounds().left + paintWhiteBoard.getSize().x - (2 * toDraw.getRadius()))
+						|| toDraw.getPosition().y < paintWhiteBoard.getGlobalBounds().top || toDraw.getPosition().y >(paintWhiteBoard.getGlobalBounds().top + paintWhiteBoard.getSize().y - (2 * toDraw.getRadius()))) {
+						break;
+					}
+					paintWhiteBoardElements.push_back(toDraw);
+				}
 			}
 			// MENU ICONS
 			if (menuTextOneRect.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y))
@@ -504,18 +518,17 @@ void Game::pollEvents() {
 				}
 			}
 			else if (event.mouseButton.button == sf::Mouse::Left) {
+				// Pour fermer le menu à chaque clic gauche en dehors du menu
 				if (showMenu) showMenu = !showMenu;
 				// "Fermer"
 				if (menuTextOneRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y) ||
 					windowExitCross.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
-					std::cout << "Fenetre fermee par l'utilisateur" << std::endl;
 					m_isRunning = false;
 					window->close();
 				}
 				// "Réduire"
 				else if (menuTextTwoRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y) ||
 					windowReduceLine.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
-					std::cout << "Fenetre reduite par l'utilisateur" << std::endl;
 					windowReduceLine.setFillColor(sf::Color::White);
 					HWND hwnd = window->getSystemHandle();
 					ShowWindow(hwnd, SW_MINIMIZE);
@@ -523,25 +536,24 @@ void Game::pollEvents() {
 				}
 				// "Accueil"
 				else if (menuTextThreeRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
-					std::cout << "L'utilisateur retourne a l'accueil" << std::endl;
 					mode = "default";
 					break;
 				}
 				// "Peindre"
 				else if (menuTextFourRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
-					std::cout << "Peindre execute par l'utilisateur" << std::endl;
 					mode = "paint";
+					lineColor == sf::Color::Black;
+					lineThickness = 3;
+					isColoring = true;
 					break;
 				}
 				// "Pong"
 				else if (menuTextFiveRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
-					std::cout << "Pong execute par l'utilisateur" << std::endl;
 					mode = "pong";
 					break;
 				}
 				// "Casse briques"
 				else if (menuTextSixRect.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
-					std::cout << "Casse briques execute par l'utilisateur" << std::endl;
 					mode = "tilebreaker";
 					break;
 				}
@@ -552,83 +564,92 @@ void Game::pollEvents() {
 					mus_megalovania.play();
 					break;
 				}
-				else
-					showMenu = false; // Cacher le menu si on clique ailleurs
-				// --- PAINT --- //
-				if (paintTopBarPaletteColorsSectionColorBlack.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Couleur noire
+				else if (paintTopBarPaletteColorsSectionColorBlack.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorBlack.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
 				}
-				else if (paintTopBarPaletteColorsSectionColorWhite.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Couleur blanche
+				else if (paintTopBarPaletteColorsSectionColorWhite.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorWhite.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
 				}
-				else if (paintTopBarPaletteColorsSectionColorRed.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Couleur rouge
+				else if (paintTopBarPaletteColorsSectionColorRed.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorRed.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
-				}
-				else if (paintTopBarPaletteColorsSectionColorGreen.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				} 
+				// Couleur verte
+				else if (paintTopBarPaletteColorsSectionColorGreen.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorGreen.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
-				}
-				else if (paintTopBarPaletteColorsSectionColorBlue.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				} 
+				// Couleur bleue
+				else if (paintTopBarPaletteColorsSectionColorBlue.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorBlue.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
-				}
-				else if (paintTopBarPaletteColorsSectionColorPurple.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				} 
+				// Couleur violette
+				else if (paintTopBarPaletteColorsSectionColorPurple.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorPurple.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
-				}
-				else if (paintTopBarPaletteColorsSectionColorPink.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				} 
+				// Couleur rose
+				else if (paintTopBarPaletteColorsSectionColorPink.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					lineColor = paintTopBarPaletteColorsSectionColorPink.getFillColor();
-					std::cout << "Event" << std::endl;
+					isColoring = true;
+					isErasing = false;
 					break;
 				}
-				// THICKNESS SECTION
-				else if (paintTopBarPaletteThicknessPlus.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
-					drawRadius = lineThicknessToElementRadius(lineThickness + 1);
-					std::cout << "Event" << std::endl;
+				// Add thickness
+				else if (paintTopBarPaletteThicknessPlus.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
+					drawRadius = lineThicknessToElementRadius(++lineThickness);
+					if (drawRadius != ((lineThickness) * 5))
+						--lineThickness;
 					break;
 				}
-				else if (paintTopBarPaletteThicknessMinus.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
-					drawRadius = lineThicknessToElementRadius(lineThickness - 1);
-					std::cout << "Event" << std::endl;
+				// Substract thickness
+				else if (paintTopBarPaletteThicknessMinus.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
+					drawRadius = lineThicknessToElementRadius(--lineThickness);
+					if (drawRadius != ((lineThickness) * 5))
+						++lineThickness;
 					break;
 				}
-				// CLEAR SECTION
-				else if (paintTopBarPaletteClearSectionEraser.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Eraser
+				else if (paintTopBarPaletteClearSectionEraser.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					isErasing = true;
 					isDrawingBrush = false;
 					isDrawingPen = false;
 					isColoring = false;
-					std::cout << "Gomme" << std::endl;
 					break;
 				}
-				else if (paintTopBarPaletteClearSectionClearAll.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Trash can
+				else if (paintTopBarPaletteClearSectionClearAll.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					paintWhiteBoardElements.clear();
-					std::cout << "Poubelle" << std::endl;
 					break;
 				}
-				else if (paintTopBarPaletteDrawSectionBrush.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Brush
+				else if (paintTopBarPaletteDrawSectionBrush.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					isErasing = false;
-					isDrawingBrush = true;
-					isDrawingPen = false;
-					isColoring = false;
-					std::cout << "Pinceau" << std::endl;
+					drawRadius = lineThicknessToElementRadius(4);
 					break;
 				}
-				else if (paintTopBarPaletteDrawSectionPen.getGlobalBounds().contains((float)event.mouseMove.x, (float)event.mouseMove.y)) {
+				// Pen
+				else if (paintTopBarPaletteDrawSectionPen.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
 					isErasing = false;
-					isDrawingBrush = false;
-					isDrawingPen = true;
-					isColoring = false;
-					std::cout << "Stylo" << std::endl;
+					drawRadius = lineThicknessToElementRadius(1);
 					break;
 				}
 				else
@@ -713,7 +734,7 @@ void Game::update() {
 		sprLogoDVD.setColor(colors[DVDColorIndex]);
 	} // \brief DVD Logo stuff
 	if (mode == "paint") {
-		// Code
+		/* No code needed here, every aspect of this mode is processed in other functions */
 	}
 	if (mode == "pong") {
 		float xPos = pongPlayBall.getPosition().x;
@@ -747,8 +768,6 @@ void Game::update() {
 		std::chrono::steady_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 		float xPos = TBKBall.getPosition().x;
 		float yPos = TBKBall.getPosition().y;
-		if (TBKPaused)
-			std::cout << "Paused" << "\n";
 		if (TBKStarted)
 			TBKBall.move(f_TBK_xVelocity, f_TBK_yVelocity);
 		for (int i = 0; i < 70; ++i) {
@@ -789,6 +808,9 @@ void Game::render() {
 	// Drawing part "paint"
 	if (mode == "paint") {
 		window->draw(paintWhiteBoard);
+		for (sf::CircleShape element : paintWhiteBoardElements) {
+			window->draw(element);
+		}
 		window->draw(paintTopBarPalette);
 		window->draw(paintTopBarPaletteColorsSectionColorBlack);
 		window->draw(paintTopBarPaletteColorsSectionColorWhite);
@@ -862,7 +884,7 @@ void Game::render() {
 	}
 
 	// Last layer elements separated from the other elements to avoid layering problems.
-	// These textures show in every mode.
+	// These textures are rendered in every mode.
 	window->draw(CustomTitleBarBG);
 	window->draw(windowTitle);
 	window->draw(windowReduceLine);
