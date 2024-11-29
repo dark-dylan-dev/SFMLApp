@@ -161,7 +161,7 @@ Game::Game() :
 	initFonts();
 	initTextures();
 	initTexts();
-	window->setVerticalSyncEnabled(true);
+	window->setFramerateLimit(60);
 	startingTimePoint = std::chrono::high_resolution_clock::now();
 	currentTimePoint = startingTimePoint;
 }
