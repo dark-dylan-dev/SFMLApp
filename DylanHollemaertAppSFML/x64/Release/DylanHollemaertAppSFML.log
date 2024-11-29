@@ -1,4 +1,4 @@
-﻿La génération a démarré 29/11/2024 02:14:38.
+﻿La génération a démarré 29/11/2024 03:47:16.
 La verbosité de la journalisation a la valeur Normal.     1>Projet "C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\DylanHollemaertAppSFML\DylanHollemaertAppSFML.vcxproj" sur le nœud 2 (Build cible(s)).
      1>PrepareForBuild:
          La sortie structurée est activée. La mise en forme du compilateur diagnostics reflète la hiérarchie des erreurs. Pour plus d’informations, consultez https://aka.ms/cpp/structured-output.
@@ -6,15 +6,17 @@ La verbosité de la journalisation a la valeur Normal.     1>Projet "C:\Users\PC
          Création de "x64\Release\DylanHol.5d35a9d5.tlog\unsuccessfulbuild", car "AlwaysCreate" a été spécifié.
          Mise à jour de l'horodatage "x64\Release\DylanHol.5d35a9d5.tlog\unsuccessfulbuild".
        ClCompile:
-         D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\CL.exe /c /IC:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\include /Zi /nologo /W3 /WX- /diagnostics:column /sdl /O2 /Oi /GL /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /Fo"x64\Release\\" /Fd"x64\Release\vc143.pdb" /external:W3 /Gd /TP /FC /errorReport:prompt Game.cpp
+         D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\CL.exe /c /IC:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\include /Zi /nologo /W3 /WX- /diagnostics:column /sdl /O2 /Oi /GL /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /Fo"x64\Release\\" /Fd"x64\Release\vc143.pdb" /external:W3 /Gd /TP /FC /errorReport:prompt DylanHollemaertAppSFML.cpp Game.cpp
+         DylanHollemaertAppSFML.cpp
+     1>C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\DylanHollemaertAppSFML\DylanHollemaertAppSFML.cpp(5,15): warning C4244: 'argument' : conversion de 'time_t' en 'unsigned int', perte possible de données
          Game.cpp
        Link:
          D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\x64\Release\DylanHollemaertAppSFML.exe" /NOLOGO /LIBPATH:C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\lib "sfml-system.lib" "sfml-window.lib" "sfml-graphics.lib" "sfml-audio.lib" "sfml-network.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\x64\Release\DylanHollemaertAppSFML.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG:incremental /LTCGOUT:"x64\Release\DylanHollemaertAppSFML.iobj" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\x64\Release\DylanHollemaertAppSFML.lib" /MACHINE:X64 x64\Release\DylanHollemaertAppSFML.obj
          x64\Release\Game.obj
          Génération de code en cours
-         1 of 289 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
+         1 of 286 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
            0 functions were new in current compilation
-           3 functions had inline decision re-evaluated but remain unchanged
+           2 functions had inline decision re-evaluated but remain unchanged
          Fin de la génération du code
          DylanHollemaertAppSFML.vcxproj -> C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\x64\Release\DylanHollemaertAppSFML.exe
        FinalizeBuildStatus:
@@ -23,7 +25,12 @@ La verbosité de la journalisation a la valeur Normal.     1>Projet "C:\Users\PC
      1>Génération du projet "C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\DylanHollemaertAppSFML\DylanHollemaertAppSFML.vcxproj" terminée (Build cible(s)).
 
 La génération a réussi.
-    0 Avertissement(s)
+
+       "C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\DylanHollemaertAppSFML\DylanHollemaertAppSFML.vcxproj" (Build cible) (1) ->
+       (ClCompile cible) -> 
+         C:\Users\PC\source\repos\DylanHollemaertAppSFML\SFMLApp\DylanHollemaertAppSFML\DylanHollemaertAppSFML.cpp(5,15): warning C4244: 'argument' : conversion de 'time_t' en 'unsigned int', perte possible de données
+
+    1 Avertissement(s)
     0 Erreur(s)
 
-Temps écoulé 00:00:03.51
+Temps écoulé 00:00:04.40

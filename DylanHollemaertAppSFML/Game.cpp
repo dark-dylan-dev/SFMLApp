@@ -255,7 +255,7 @@ void Game::initTextures() {
 		TBKTile.setOutlineColor(sf::Color::Black);
 		tilesTbk[i] = TBKTile;
 		tilesTbkState[i] = true; // Each tile is declared as "alive" for the setup
-		tileLifeTbk[69 - i] = tileLife;
+		tileLifeTbk[i] = tileLife;
 		tilesLifesTbk[i].setFont(GoodTiming);
 		tilesLifesTbk[i].setCharacterSize(45);
 		tilesLifesTbk[i].setFillColor(sf::Color(62,62,62));
@@ -347,6 +347,12 @@ void Game::initTexts() {
 	pongControlsLeft.setCharacterSize(30);           pongControlsRight.setCharacterSize(30);
 	pongControlsLeft.setPosition(sf::Vector2f(100, ((window->getSize().y - m_topBarHeight) / 2) + (pongControlsLeft.getCharacterSize() / 2)));
 	pongControlsRight.setPosition(sf::Vector2f((float)window->getSize().x - 265.f, ((float)(window->getSize().y - m_topBarHeight) / 2) + (pongControlsRight.getCharacterSize() / 2)));
+
+	TBKEndScreen.setFont(GoodTiming);
+	TBKEndScreen.setCharacterSize(60);
+	TBKEndScreen.setString("GG");
+	TBKEndScreen.setPosition(sf::Vector2f(((float)window->getSize().x / 2) - 45.f, ((float)window->getSize().y / 2) - (m_topBarHeight / 2)));
+	TBKEndScreen.setFillColor(sf::Color::White);
 }
 
 // Game loop
@@ -399,6 +405,12 @@ void Game::pollEvents() {
 				}
 				if (showMenu && mode == "pong") {
 					pongStarted = true;
+				}
+				if (!showMenu && mode == "tilebreaker") {
+					TBKStarted = false;
+				}
+				if (showMenu && mode == "tilebreaker") {
+					TBKStarted = true;
 				}
 				if (showMenu) {
 					showMenu = false;
@@ -709,9 +721,10 @@ void Game::pollEvents() {
 			showMenu = false;
 			pongStarted = true;
 		}
-		if (mode == "tilebreaker") {
+		if (mode == "tilebreaker")
 			TBKStarted = true;
-			TBKPaused = false;
+		if (mode == "tilebreaker" && showMenu == true) {
+			TBKStarted = true;
 		}
 	}
 }
@@ -765,20 +778,32 @@ void Game::update() {
 		}
 	}
 	if (mode == "tilebreaker") {
-		std::chrono::steady_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+		timeSinceLastCollision += f_ElapsedTime;
 		float xPos = TBKBall.getPosition().x;
 		float yPos = TBKBall.getPosition().y;
 		if (TBKStarted)
 			TBKBall.move(f_TBK_xVelocity, f_TBK_yVelocity);
 		for (int i = 0; i < 70; ++i) {
-			if (TBKBall.getGlobalBounds().intersects(tilesTbk[i].getGlobalBounds()) && 1/*condition de timer a déterminer*/) {
+			if (TBKBall.getGlobalBounds().intersects(tilesTbk[i].getGlobalBounds()) && tileLifeTbk[i] > 0 && timeSinceLastCollision > minimalTimeBetweenCollisions) {
+				timeSinceLastCollision = 0.f;
+				tileLifeTbk[i] -= 1;
+				tilesLifesTbk[i].setString(std::to_string(tileLifeTbk[i]));
 				f_TBK_xVelocity *= -1;
 				f_TBK_yVelocity *= -1;
-				tilesTbkState[i] = false;
-				tilesTbk[i].setPosition(sf::Vector2f(0, 0));
+				if (tileLifeTbk[i] == 0) {
+					tilesTbkState[i] = false;
+					tilesTbk[i].setPosition(sf::Vector2f(0, 0));
+				}
+				if (tilesTbkState[i] == false) {
+					deadTilesCounter++;
+				}
+				if (deadTilesCounter == 70) {
+					TBKStarted = false;
+					TBKWin = true;
+				}
 			}
 		}
-		if ((TBKBall.getGlobalBounds().intersects(TBKPaddle.getGlobalBounds()) && f_TBK_yVelocity > 0) ||
+		if ((TBKBall.getGlobalBounds().intersects(TBKPaddle.getGlobalBounds()) && timeSinceLastCollision > minimalTimeBetweenCollisions) ||
 			(TBKBall.getPosition().y <= m_topBarHeight && f_TBK_yVelocity < 0)) {
 			f_TBK_yVelocity *= -1;
 		}
@@ -844,24 +869,26 @@ void Game::render() {
 	if (mode == "tilebreaker") {
 		window->draw(TBKScene);
 		window->draw(TBKPaddle);
-		int it = 0;
-		for (int i = 0; i < 10; ++i) {
-			for (int j = 1; j < 8; ++j) {
-				if (tilesTbkState[it] == true) { // Only set their position if they're alive
-					tilesTbk[it].setPosition(sf::Vector2f((
-						(window->getSize().x - window->getSize().y) / 2) + (tilesTbk[i].getSize().x * i) - 2,
-						((tilesTbk[i].getSize().y + 10) * j)));
-					tilesLifesTbk[it].setPosition(sf::Vector2f(tilesTbk[it].getPosition().x + 17.f, tilesTbk[it].getPosition().y - 4.f));
+		window->draw(TBKEndScreen);
+		if (!TBKWin) {
+			int it = 0;
+			for (int i = 0; i < 10; ++i) {
+				for (int j = 1; j < 8; ++j) {
+					if (tilesTbkState[it] == true) { // Only set their position if they're alive
+						tilesTbk[it].setPosition(sf::Vector2f((
+							(window->getSize().x - window->getSize().y) / 2) + (tilesTbk[i].getSize().x * i) - 2,
+							((tilesTbk[i].getSize().y + 10) * j)));
+						tilesLifesTbk[it].setPosition(sf::Vector2f(tilesTbk[it].getPosition().x + 17.f, tilesTbk[it].getPosition().y - 4.f));
+					}
+					tilesTbk[it].setFillColor(sf::Color(colors[j - 1]));
+					if (tilesTbkState[it] == true) {// Draws the tile only if it's alive
+						window->draw(tilesTbk[it]);      // Tile
+						window->draw(tilesLifesTbk[it]); // Its HP
+					}
+					++it;
 				}
-				tilesTbk[it].setFillColor(sf::Color(colors[j-1]));
-				if (tilesTbkState[it] == true) {// Draws the tile only if it's alive
-					window->draw(tilesTbk[it]);      // Tile
-					window->draw(tilesLifesTbk[it]); // Its HP
-				}
-				++it;
 			}
 		}
-		cond = false;
 		window->draw(TBKBall);
 	}
 

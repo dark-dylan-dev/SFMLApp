@@ -32,24 +32,25 @@ public:
 
 private:
 	bool m_isRunning;
-	bool cond = true;
 	// Window & important application variables
 	sf::RenderWindow* window;
 	sf::WindowBase windowBase;
 	sf::Event event;
 	sf::Image appIcon;
 	sf::Clock Clock;
-	float f_ElapsedTime; // Temps écoulé depuis la dernière frame
+	float f_ElapsedTime;
 	// ----------------------------------- //
 	const float m_topBarHeight = 30.f;
 	bool showMenu = false;
 	bool pongStarted = false;
-	bool TBKStarted = false; /* TBK = TileBreaker */
-	bool TBKPaused = false;
+	bool TBKStarted = false;
+	bool TBKWin = false;
 	bool m_isMouseDragging;
 	unsigned int m_lastDownX;
 	unsigned int m_lastDownY;
 	std::chrono::steady_clock::time_point startingTimePoint, currentTimePoint;
+	float timeSinceLastCollision;
+	const float minimalTimeBetweenCollisions = (6 * (1.f/60.f)); // 10 collisions / second maxmimum
 
 private:
 	// --- Cursors --- //
@@ -60,10 +61,11 @@ private:
 	sf::Color lineColor = sf::Color(0,0,0); // Initialized to black
 	// --- Tiles TBK --- //
 	std::array<sf::RectangleShape, 70> tilesTbk; // Tiles in the tilebreaker game (7 height, 10 width -> 7x10 setup -> 70 tiles)
-	std::array<sf::Text, 70> tilesLifesTbk;
-	bool tilesTbkState[70];
-	int tileLifeTbk[70];
+	std::array<sf::Text, 70> tilesLifesTbk; // Contains the texts of the HP of each tile
+	bool tilesTbkState[70]; // Contains the living status of each tile
+	int tileLifeTbk[70]; // Contains the HP of every tile
 	int tileLife;
+	int deadTilesCounter = 0;
 	// --- Paint --- //
 	bool isDrawingBrush = false;
 	bool isDrawingPen = false;
@@ -97,7 +99,7 @@ private:
 	// --- Fonts --- //
 	sf::Font Impact, Arial, Comic, GoodTiming;
 	// --- Texts "All modes" --- //
-	std::string mode = "default";
+	std::string mode = "tilebreaker";
 	sf::Text windowTitle;
 	sf::Text FPString;
 	sf::Text timeSinceStart;
@@ -115,7 +117,7 @@ private:
 	sf::Text pongControlsRight;
 	// --- Texts "Tilebreaker" mode --- //
 	sf::Text TBKTileHP;
-	sf::Text TBKScore;
+	sf::Text TBKEndScreen;
 	// --- Shapes "all modes" --- //
 	sf::RectangleShape CustomTitleBarBG;
 	sf::RectangleShape windowBounds;
