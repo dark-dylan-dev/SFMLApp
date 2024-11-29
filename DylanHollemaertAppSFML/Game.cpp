@@ -799,7 +799,7 @@ void Game::update() {
 				}
 			}
 		}
-		if ((TBKBall.getGlobalBounds().intersects(TBKPaddle.getGlobalBounds()) && timeSinceLastCollision > minimalTimeBetweenCollisions) ||
+		if ((TBKBall.getGlobalBounds().intersects(TBKPaddle.getGlobalBounds()) && timeSinceLastCollision > minimalTimeBetweenCollisions && f_TBK_yVelocity > 0) ||
 			(TBKBall.getPosition().y <= m_topBarHeight && f_TBK_yVelocity < 0)) {
 			f_TBK_yVelocity *= -1;
 		}
