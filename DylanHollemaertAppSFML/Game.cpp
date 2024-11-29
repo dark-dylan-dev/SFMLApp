@@ -28,8 +28,7 @@ static std::chrono::nanoseconds durationToDuration(const float& time_s) {
 	return std::chrono::round<std::chrono::nanoseconds>(std::chrono::duration<float>{ time_s });
 }
 
-// --- "paint" mode only --- 
-// Checks the line thickness to draw elements on the white board
+// Checks the line thickness to draw elements on the white board (used in "paint" mode only)
 static float lineThicknessToElementRadius(int thickness) {
 	if (thickness > 10) {
 		thickness = 10;
@@ -41,7 +40,7 @@ static float lineThicknessToElementRadius(int thickness) {
 	return elementRadius;
 }
 
-// Constructor / Destructor
+// Constructor
 Game::Game() :
 	window(new sf::RenderWindow(sf::VideoMode(1200, 715), "App SFML", sf::Style::None)),
 	windowBase(sf::VideoMode(window->getSize().x, window->getSize().y), "App SFML", sf::Style::None),
@@ -55,21 +54,17 @@ Game::Game() :
 	startingTimePoint = std::chrono::high_resolution_clock::now();
 	currentTimePoint = startingTimePoint;
 }
-Game::~Game() {}
 
 // Initialization
 void Game::initFonts() {
 	Impact.loadFromFile("Assets/Fonts/impact.ttf");
 	Arial.loadFromFile("Assets/Fonts/arial.ttf");
-	Comic.loadFromFile("Assets/Fonts/comic.ttf");
 	GoodTiming.loadFromFile("Assets/Fonts/goodTiming.otf");
 }
 void Game::initTextures() {
-	// Load from file
 	// --- "Songs" --- //
 	mus_megalovania.openFromFile("Assets/Songs/megalovania.ogg");
-	TBKTileBroken.openFromFile("Assets/Songs/TileBreaker/broken_tile.mp3");
-	TBKTileBroken.setPlayingOffset(sf::Time(sf::milliseconds(0)));
+
 	// --- "Images" --- //
 	appIcon.loadFromFile("Assets/Images/Icons/icon.png");
 	logoDVD.loadFromFile("Assets/Images/Logos/Logo_DVD.png");
@@ -82,6 +77,7 @@ void Game::initTextures() {
 	paintTopBarPaletteDrawPenTexture.loadFromFile("Assets/Images/IMG_paintTopBarPalettePen.png");
 	paintTopBarPaletteThicknessPlusTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteThicknessPlus.png");
 	paintTopBarPaletteThicknessMinusTexture.loadFromFile("Assets/Images/IMG_paintTopBarPaletteThicknessMinus.png");
+
 	// --- "Cursors" --- //
 	arrowCursor.loadFromSystem(sf::Cursor::Arrow);
 	handCursor.loadFromSystem(sf::Cursor::Hand);
@@ -108,7 +104,6 @@ void Game::initTextures() {
 	};
 
 	// Shapes init
-	// Window boundaries (makes user experience better)
 	windowBounds.setPosition(1.f, 1.f);
 	windowBounds.setSize(sf::Vector2f((float)window->getSize().x - 2.f, (float)window->getSize().y - 2.f));
 	windowBounds.setFillColor(sf::Color::Transparent);
@@ -118,7 +113,6 @@ void Game::initTextures() {
 	CustomTitleBarBG.setOrigin(sf::Vector2f(0.f, 0.f));
 	CustomTitleBarBG.setSize(sf::Vector2f((float)window->getSize().x, m_topBarHeight));
 	CustomTitleBarBG.setFillColor(sf::Color::White);
-	// Topbar buttons
 	// --- Exit cross
 	windowExitCross.setPosition(window->getSize().x - (30.f), 0);
 	windowExitCross.setSize(sf::Vector2f(30.f, 30.f));
@@ -128,7 +122,7 @@ void Game::initTextures() {
 	windowReduceLine.setSize(sf::Vector2f(30.f, 30.f));
 	windowReduceLine.setFillColor(sf::Color::White);
 
-	// Main application textures
+	// Default mode textures
 	sprLogoDVD.setTexture(logoDVD);
 	sprLogoDVD.scale(.4f, .4f);
 	sprLogoDVD.setPosition(sf::Vector2f( // Essentially placing it in the middle of the window
@@ -142,13 +136,13 @@ void Game::initTextures() {
 	paintWhiteBoard.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2), ((window->getSize().y / 2) - (paintWhiteBoard.getSize().y / 2)) + m_topBarHeight + 15.f)); // 30.f palette
 	paintWhiteBoard.setOutlineThickness(1.f);
 	paintWhiteBoard.setOutlineColor(sf::Color::Black);
-	// TOPBAR
+	// --- Topbar
 	paintTopBarPalette.setSize(sf::Vector2f(paintWhiteBoard.getSize().x, 60.f));
 	paintTopBarPalette.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2), 60.f));
 	paintTopBarPalette.setOutlineThickness(1.f);
 	paintTopBarPalette.setOutlineColor(sf::Color::Black);
 	paintTopBarPalette.setFillColor(sf::Color(128,128,128));
-	// COLORS SECTION
+	// --- Colors section
 	paintTopBarPaletteColorsSectionColorBlack.setSize(sf::Vector2f(40.f, 40.f));
 	paintTopBarPaletteColorsSectionColorBlack.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 10.f, 70.f));
 	paintTopBarPaletteColorsSectionColorBlack.setOutlineThickness(1.f);
@@ -184,24 +178,24 @@ void Game::initTextures() {
 	paintTopBarPaletteColorsSectionColorPink.setOutlineThickness(1.f);
 	paintTopBarPaletteColorsSectionColorPink.setOutlineColor(sf::Color::Black);
 	paintTopBarPaletteColorsSectionColorPink.setFillColor(sf::Color::Magenta);
-	// ERASER
+	// --- Eraser
 	paintTopBarPaletteClearSectionEraser.setTexture(paintTopBarPaletteEraserTexture);
 	paintTopBarPaletteClearSectionEraser.scale(sf::Vector2f(0.08929f, 0.08929f));
 	paintTopBarPaletteClearSectionEraser.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 110.f, 70.f));
-	// CLEAR ALL
+	// --- Clear all
 	paintTopBarPaletteClearSectionClearAll.setTexture(paintTopBarPaletteClearAllTexture);
 	paintTopBarPaletteClearSectionClearAll.scale(sf::Vector2f(0.078125f, 0.078125f));
 	paintTopBarPaletteClearSectionClearAll.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 50.f, 70.f));
 	paintTopBarPaletteClearSectionClearAll.setColor(sf::Color::Black);
-	// BRUSH
+	// --- Brush
 	paintTopBarPaletteDrawSectionBrush.setTexture(paintTopBarPaletteDrawBrushTexture);
 	paintTopBarPaletteDrawSectionBrush.scale(sf::Vector2f(0.078125f, 0.078125f));
 	paintTopBarPaletteDrawSectionBrush.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 210.f, 70.f));
-	// PEN
+	// --- Pen
 	paintTopBarPaletteDrawSectionPen.setTexture(paintTopBarPaletteDrawPenTexture);
 	paintTopBarPaletteDrawSectionPen.scale(sf::Vector2f(0.078125f, 0.078125f));
 	paintTopBarPaletteDrawSectionPen.setPosition(sf::Vector2f((window->getSize().x / 2) + (paintWhiteBoard.getSize().x / 2) - 160.f, 70.f));
-	// LINE THICKNESS
+	// --- Line thickness
 	paintTopBarPaletteThicknessPlus.setTexture(paintTopBarPaletteThicknessPlusTexture);
 	paintTopBarPaletteThicknessPlus.scale(sf::Vector2f(0.078125f, 0.078125f));
 	paintTopBarPaletteThicknessPlus.setPosition(sf::Vector2f((window->getSize().x / 2) - (paintWhiteBoard.getSize().x / 2) + 535.f, 70.f));
@@ -247,7 +241,7 @@ void Game::initTextures() {
 	TBKPaddle.setOutlineThickness(1.f);
 	TBKPaddle.setOutlineColor(sf::Color::Black);
 	TBKPaddle.setPosition((float)(window->getSize().x - TBKPaddle.getSize().x) / 2, (float)window->getSize().y - 80.f);
-	// Setup des tuiles
+	// --- Tiles setup
 	for (int i = 0; i < 70; ++i) {
 		if (i % 7 == 0) tileLife = 7; // More life as the layers go up, starts at 7, -1 every 10 blocks.
 		TBKTile.setSize(sf::Vector2f((float)(TBKScene.getSize().x / 10.f), 50.f));
@@ -270,7 +264,7 @@ void Game::initTextures() {
 	menuBackground.setFillColor(DARK_GRAY);
 	menuBackground.setOutlineThickness(1.f);
 	menuBackground.setOutlineColor(sf::Color::Black);
-	// Choices in that menu ^^^
+	// --- Choices in the menu
 	menuTextOneRect.setSize(sf::Vector2f(118, 30));   menuTextTwoRect.setSize(sf::Vector2f(118, 30));
 	menuTextThreeRect.setSize(sf::Vector2f(118, 30)); menuTextFourRect.setSize(sf::Vector2f(118, 30));
 	menuTextFiveRect.setSize(sf::Vector2f(118, 30));  menuTextSixRect.setSize(sf::Vector2f(118, 30));
@@ -281,6 +275,7 @@ void Game::initTextures() {
 	menuTextSevenRect.setFillColor(DARK_GRAY);
 }
 void Game::initTexts() {
+	// Menu
 	menuTextOne.setString("Fermer");              menuTextTwo.setString("Réduire");
 	menuTextThree.setString("Accueil");           menuTextFour.setString("Paint");
 	menuTextFive.setString("Pong");               menuTextSix.setString("Casse briques");
@@ -297,57 +292,60 @@ void Game::initTexts() {
 	menuTextThree.setFillColor(sf::Color::White); menuTextFour.setFillColor(sf::Color::White);
 	menuTextFive.setFillColor(sf::Color::White);  menuTextSix.setFillColor(sf::Color::White);
 	menuTextSeven.setFillColor(sf::Color::White);
-
+	// --- Positions
 	menuBackground.setPosition(0.f, 30.f);
-	menuTextOneRect.setPosition(0.f, 30.f);
-	menuTextTwoRect.setPosition(0.f, 60.f);
-	menuTextThreeRect.setPosition(0.f, 90.f);
-	menuTextFourRect.setPosition(0.f, 120.f);
-	menuTextFiveRect.setPosition(0.f, 150.f);
-	menuTextSixRect.setPosition(0.f, 180.f);
-	menuTextSevenRect.setPosition(0.f, 210.f);
-	menuTextOne.setPosition(10.f, 35.f);
-	menuTextTwo.setPosition(10.f, 65.f);
-	menuTextThree.setPosition(10.f, 95.f);
-	menuTextFour.setPosition(10.f, 125.f);
-	menuTextFive.setPosition(10.f, 155.f);
-	menuTextSix.setPosition(10.f, 185.f);
-	menuTextSeven.setPosition(10.f, 215.f);
-
+	menuTextOneRect.setPosition(0.f, 30.f);       menuTextOne.setPosition(10.f, 35.f);
+	menuTextTwoRect.setPosition(0.f, 60.f);       menuTextTwo.setPosition(10.f, 65.f);
+	menuTextThreeRect.setPosition(0.f, 90.f);     menuTextThree.setPosition(10.f, 95.f);
+	menuTextFourRect.setPosition(0.f, 120.f);     menuTextFour.setPosition(10.f, 125.f);
+	menuTextFiveRect.setPosition(0.f, 150.f);     menuTextFive.setPosition(10.f, 155.f);
+	menuTextSixRect.setPosition(0.f, 180.f);      menuTextSix.setPosition(10.f, 185.f);
+	menuTextSevenRect.setPosition(0.f, 210.f);    menuTextSeven.setPosition(10.f, 215.f);
+	
+	// Title
 	windowTitle.setFont(Arial);
 	windowTitle.setCharacterSize(12);
 	windowTitle.setFillColor(sf::Color::Black);
 	windowTitle.setPosition(30.f, 7.5f);
 	windowTitle.setString("App SFML");
 
+	// FPS
 	FPString.setFont(Impact);
 	FPString.setCharacterSize(20);
 	FPString.setFillColor(sf::Color::White);
 	FPString.setPosition(5.f, (5.f + CustomTitleBarBG.getSize().y));
 
+	// Time
 	timeSinceStart.setFont(Impact);
 	timeSinceStart.setCharacterSize(20);
 	timeSinceStart.setFillColor(sf::Color::White);
 	timeSinceStart.setPosition(5.f, ((float)window->getSize().y - CustomTitleBarBG.getSize().y));
 
+	// Pong
+	// --- Left player
 	pongScoreLeftPlayer.setFont(Impact);
 	pongScoreLeftPlayer.setCharacterSize(30);
 	pongScoreLeftPlayer.setFillColor(sf::Color::White);
 	pongScoreLeftPlayer.setPosition(sf::Vector2f((float)(window->getSize().x / 2) - 30.f, (5.f + CustomTitleBarBG.getSize().y)));
 	pongScoreLeftPlayer.setString("0");
-
+	// --- Right player
 	pongScoreRightPlayer.setFont(Impact);
 	pongScoreRightPlayer.setCharacterSize(30);
 	pongScoreRightPlayer.setFillColor(sf::Color::White);
 	pongScoreRightPlayer.setPosition(sf::Vector2f((float)(window->getSize().x / 2) + 7.f, (5.f + CustomTitleBarBG.getSize().y)));
 	pongScoreRightPlayer.setString("0");
-
-	pongControlsLeft.setFont(GoodTiming);            pongControlsRight.setFont(GoodTiming);
-	pongControlsLeft.setString("Z / S"); pongControlsRight.setString("Up / Down");
-	pongControlsLeft.setCharacterSize(30);           pongControlsRight.setCharacterSize(30);
+	// --- Left controls
+	pongControlsLeft.setFont(GoodTiming);            
+	pongControlsLeft.setString("Z / S");             
+	pongControlsLeft.setCharacterSize(30);           
 	pongControlsLeft.setPosition(sf::Vector2f(100, ((window->getSize().y - m_topBarHeight) / 2) + (pongControlsLeft.getCharacterSize() / 2)));
+	// --- Right controls
+	pongControlsRight.setFont(GoodTiming);
+	pongControlsRight.setString("Up / Down");
+	pongControlsRight.setCharacterSize(30);
 	pongControlsRight.setPosition(sf::Vector2f((float)window->getSize().x - 265.f, ((float)(window->getSize().y - m_topBarHeight) / 2) + (pongControlsRight.getCharacterSize() / 2)));
 
+	// Tilebreaker (end screen)
 	TBKEndScreen.setFont(GoodTiming);
 	TBKEndScreen.setCharacterSize(60);
 	TBKEndScreen.setString("GG");
@@ -358,7 +356,6 @@ void Game::initTexts() {
 // Game loop
 void Game::run() {
 	currentTimePoint = std::chrono::high_resolution_clock::now();
-
 	while (m_isRunning) {
 		// --- RUNTIME SECONDS COUNTER --- //
 		f_ElapsedTime = Clock.restart().asSeconds();
@@ -368,7 +365,6 @@ void Game::run() {
 
 		// --- FPS CALCULATION --- //
 		float fps = 1.f / f_ElapsedTime;
-		// Set the FPS digit precision to 2
 		std::ostringstream oss;
 		oss << std::fixed << std::setprecision(2) << fps;
 		std::string FPSValue = oss.str();
@@ -745,7 +741,7 @@ void Game::update() {
 		}
 		if (DVDColorIndex % 12 == 0) DVDColorIndex = 0;
 		sprLogoDVD.setColor(colors[DVDColorIndex]);
-	} // \brief DVD Logo stuff
+	}
 	if (mode == "paint") {
 		/* No code needed here, every aspect of this mode is processed in other functions */
 	}
@@ -869,7 +865,6 @@ void Game::render() {
 	if (mode == "tilebreaker") {
 		window->draw(TBKScene);
 		window->draw(TBKPaddle);
-		window->draw(TBKEndScreen);
 		if (!TBKWin) {
 			int it = 0;
 			for (int i = 0; i < 10; ++i) {
@@ -888,6 +883,9 @@ void Game::render() {
 					++it;
 				}
 			}
+		}
+		else {
+			window->draw(TBKEndScreen);
 		}
 		window->draw(TBKBall);
 	}
@@ -910,8 +908,7 @@ void Game::render() {
 		window->draw(menuTextSeven);
 	}
 
-	// Last layer elements separated from the other elements to avoid layering problems.
-	// These textures are rendered in every mode.
+	// Last layer elements separated from the other elements to avoid rendering discomfort.
 	window->draw(CustomTitleBarBG);
 	window->draw(windowTitle);
 	window->draw(windowReduceLine);

@@ -11,8 +11,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <cmath>
-#include <list>
 #include <array>
 #include <chrono>
 #include <ctime>
@@ -22,7 +20,6 @@
 class Game {
 public:
 	Game();
-	~Game();
 
 	void run();
 
@@ -39,7 +36,6 @@ private:
 	sf::Image appIcon;
 	sf::Clock Clock;
 	float f_ElapsedTime;
-	// ----------------------------------- //
 	const float m_topBarHeight = 30.f;
 	bool showMenu = false;
 	bool pongStarted = false;
@@ -57,13 +53,13 @@ private:
 	sf::Cursor arrowCursor;
 	sf::Cursor handCursor;
 	// --- Colors --- //
-	std::array<sf::Color, 12> colors; // Colors of the DVD Logo
-	sf::Color lineColor = sf::Color(0,0,0); // Initialized to black
+	std::array<sf::Color, 12> colors;            // Colors of the DVD Logo
+	sf::Color lineColor = sf::Color(0,0,0);      // Initialized to black ("paint" mode)
 	// --- Tiles TBK --- //
 	std::array<sf::RectangleShape, 70> tilesTbk; // Tiles in the tilebreaker game (7 height, 10 width -> 7x10 setup -> 70 tiles)
-	std::array<sf::Text, 70> tilesLifesTbk; // Contains the texts of the HP of each tile
-	bool tilesTbkState[70]; // Contains the living status of each tile
-	int tileLifeTbk[70]; // Contains the HP of every tile
+	std::array<sf::Text, 70> tilesLifesTbk;      // Contains the texts of the HP of each tile
+	bool tilesTbkState[70];                      // Contains the living status of each tile
+	int tileLifeTbk[70];                         // Contains the HP of every tile
 	int tileLife;
 	int deadTilesCounter = 0;
 	// --- Paint --- //
@@ -99,7 +95,7 @@ private:
 	// --- Fonts --- //
 	sf::Font Impact, Arial, Comic, GoodTiming;
 	// --- Texts "All modes" --- //
-	std::string mode = "tilebreaker";
+	std::string mode = "default";
 	sf::Text windowTitle;
 	sf::Text FPString;
 	sf::Text timeSinceStart;
@@ -155,8 +151,7 @@ private:
 	sf::RectangleShape TBKPaddle;
 	sf::CircleShape TBKBall;
 	// --- Music --- //
-	sf::Music mus_megalovania; // \brief ...You're dead... \param You \param Sans
-	sf::Music TBKTileBroken; // TODO : Add it
+	sf::Music mus_megalovania;
 
 private:
 	void initFonts();
